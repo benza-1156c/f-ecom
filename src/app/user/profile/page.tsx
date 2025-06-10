@@ -6,61 +6,31 @@ import { Icon } from "@iconify/react";
 import Navbar from "@/components/Nav/Navbar";
 import { useAuth } from "@/app/AuthProvider";
 import Image from "next/image";
+import { api } from "@/lib/api";
+import toast from "react-hot-toast";
 
-interface Address {
-  id: string;
-  type: "home" | "work" | "other";
-  name: string;
-  address: string;
-  district: string;
-  province: string;
-  postalCode: string;
-  phone: string;
-  isDefault: boolean;
-}
-
-interface Order {
-  id: string;
-  orderNumber: string;
-  status: "pending" | "processing" | "shipped" | "delivered" | "cancelled";
-  total: number;
-  items: number;
-  createdAt: string;
-}
 
 const ProfilePage = () => {
-  const [activeTab, setActiveTab] = useState("profile");
+  const [activeTab, setActiveTab] = useState("addresses");
   const [saving, setSaving] = useState(false);
   const { user, loading } = useAuth();
-  const [addresses, setAddresses] = useState<Address[]>([]);
-  const [orders, setOrders] = useState<Order[]>([]);
+  const [addresses, setAddresses] = useState<any[]>([]);
+  const [orders, setOrders] = useState<any[]>([]);
   const [showAddressModal, setShowAddressModal] = useState(false);
-  const [editingAddress, setEditingAddress] = useState<Address | null>(null);
+  const [editingAddress, setEditingAddress] = useState<any | null>(null);
   const [provinceLoading, setProvinceLoading] = useState(false);
-  const [profileForm, setProfileForm] = useState({
-    firstName: "",
-    lastName: "",
-    phone: "",
-    dateOfBirth: "",
-    gender: "",
-  });
 
   const [addressForm, setAddressForm] = useState({
     type: "home" as "home" | "work" | "other",
     label: "",
     recipientName: "",
+    lastName: "",
     phone: "",
-    houseNumber: "",
-    soi: "",
-    road: "",
-    provinceId: "",
-    amphureId: "",
-    tambonId: "",
+    other: "",
     province: "",
     district: "",
     subDistrict: "",
     postalCode: "",
-    additionalInfo: "",
     isDefault: false,
   }) as any;
   const [provinces, setProvinces] = useState<any[]>([]);
@@ -69,6 +39,7 @@ const ProfilePage = () => {
 
   useEffect(() => {
     fetchProvinces();
+    fetchAddresses();
   }, []);
 
   const fetchProvinces = async () => {
@@ -83,6 +54,20 @@ const ProfilePage = () => {
       console.error(error);
     } finally {
       setProvinceLoading(false);
+    }
+  };
+
+  const fetchAddresses = async () => {
+    try {
+      const response = await fetch(`${api}/addresses`, {
+        credentials: "include",
+      });
+      const data = await response.json();
+      if (data.success) {
+        setAddresses(data.data);
+      }
+    } catch (error) {
+      console.error(error);
     }
   };
 
@@ -141,44 +126,40 @@ const ProfilePage = () => {
     });
   };
 
-  const handleProfileUpdate = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setSaving(true);
-    try {
-      const response = await fetch("/api/user/profile", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(profileForm),
-      });
-      if (!response.ok) throw new Error("Failed to update profile");
-    } catch (error) {
-      console.error("Error updating profile:", error);
-    } finally {
-      setSaving(false);
-    }
-  };
-
   const handleAddressSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!addressForm.provinceId || !addressForm.amphureId || !addressForm.tambonId) {
+      toast.error("กรุณาเลือกจังหวัด, อำเภอ, และตำบล");
+      return;
+    }
     setSaving(true);
     try {
       const url = editingAddress
-        ? `/api/user/addresses/${editingAddress.id}`
-        : "/api/user/addresses";
+        ? `${api}/addresses/${editingAddress.ID}`
+        : `${api}/addresses`;
       const method = editingAddress ? "PUT" : "POST";
 
       const response = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify(addressForm),
       });
       if (!response.ok) throw new Error("Failed to save address");
+      const data = await response.json();
+      if (data.success) {
+        setAddresses((prev) =>
+          editingAddress
+            ? prev.map((addr) => (addr.ID === editingAddress.ID ? data.data : addr))
+            : [...prev, data.data]
+        );
+      }
 
       setShowAddressModal(false);
       setEditingAddress(null);
       resetAddressForm();
     } catch (error) {
-      console.error("Error saving address:", error);
+      console.error(error);
     } finally {
       setSaving(false);
     }
@@ -201,9 +182,7 @@ const ProfilePage = () => {
     setAddressForm({
       type: "home",
       recipientName: "",
-      houseNumber: "",
-      name: "",
-      address: "",
+      lastName: "",
       district: "",
       province: "",
       postalCode: "",
@@ -215,16 +194,16 @@ const ProfilePage = () => {
   const openEditAddress = (address: any) => {
     setEditingAddress(address);
     setAddressForm({
-      type: address.type,
-      recipientName: address.name,
-      houseNumber: address.houseNumber,
-      name: address.name,
-      address: address.address,
-      district: address.district,
-      province: address.province,
-      postalCode: address.postalCode,
-      phone: address.phone,
-      isDefault: address.isDefault,
+      type: address.Type,
+      recipientName: address.RecipientName,
+      lastName: address.LastName,
+      address: address.Address,
+      district: address.District,
+      province: address.Province,
+      other: address.Other,
+      postalCode: "",
+      phone: address.Phone,
+      isDefault: address.IsDefault,
     });
     setShowAddressModal(true);
   };
@@ -328,11 +307,6 @@ const ProfilePage = () => {
           <div className="flex space-x-1 mb-8 bg-gray-800 p-1 rounded-lg border border-gray-700">
             {[
               {
-                id: "profile",
-                label: "ข้อมูลส่วนตัว",
-                icon: "ic:round-person",
-              },
-              {
                 id: "addresses",
                 label: "ที่อยู่",
                 icon: "ic:round-location-on",
@@ -359,108 +333,6 @@ const ProfilePage = () => {
           </div>
 
           <AnimatePresence mode="wait">
-            {activeTab === "profile" && (
-              <motion.div
-                key="profile"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-              >
-                <div className="bg-gray-800 border border-gray-700 rounded-xl p-6">
-                  <h2 className="text-xl font-semibold text-white mb-6">
-                    ข้อมูลส่วนตัว
-                  </h2>
-                  <form onSubmit={handleProfileUpdate} className="space-y-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-300 mb-2">
-                          ชื่อ *
-                        </label>
-                        <input
-                          type="text"
-                          value={profileForm.firstName}
-                          onChange={(e) =>
-                            setProfileForm({
-                              ...profileForm,
-                              firstName: e.target.value,
-                            })
-                          }
-                          className="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                          required
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-300 mb-2">
-                          นามสกุล *
-                        </label>
-                        <input
-                          type="text"
-                          value={profileForm.lastName}
-                          onChange={(e) =>
-                            setProfileForm({
-                              ...profileForm,
-                              lastName: e.target.value,
-                            })
-                          }
-                          className="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                          required
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-300 mb-2">
-                          เบอร์โทรศัพท์
-                        </label>
-                        <input
-                          type="tel"
-                          value={profileForm.phone}
-                          onChange={(e) =>
-                            setProfileForm({
-                              ...profileForm,
-                              phone: e.target.value,
-                            })
-                          }
-                          className="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-300 mb-2">
-                          วันเกิด
-                        </label>
-                        <input
-                          type="date"
-                          value={profileForm.dateOfBirth}
-                          onChange={(e) =>
-                            setProfileForm({
-                              ...profileForm,
-                              dateOfBirth: e.target.value,
-                            })
-                          }
-                          className="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                        />
-                      </div>
-                    </div>
-                    <div className="flex justify-end">
-                      <button
-                        type="submit"
-                        disabled={saving}
-                        className="bg-purple-600 hover:bg-purple-700 disabled:opacity-50 text-white px-6 py-2 rounded-lg transition-colors flex items-center space-x-2"
-                      >
-                        {saving && (
-                          <Icon
-                            icon="ic:round-refresh"
-                            className="w-4 h-4 animate-spin"
-                          />
-                        )}
-                        <span>
-                          {saving ? "กำลังบันทึก..." : "บันทึกข้อมูล"}
-                        </span>
-                      </button>
-                    </div>
-                  </form>
-                </div>
-              </motion.div>
-            )}
-
             {activeTab === "addresses" && (
               <motion.div
                 key="addresses"
@@ -500,9 +372,9 @@ const ProfilePage = () => {
                     </div>
                   ) : (
                     <div className="space-y-4">
-                      {addresses.map((address) => (
+                      {addresses?.map((address) => (
                         <div
-                          key={address.id}
+                          key={address.ID}
                           className="border border-gray-700 rounded-lg p-4 relative"
                         >
                           {address.isDefault && (
@@ -518,21 +390,21 @@ const ProfilePage = () => {
                                   className="w-5 h-5 text-purple-500"
                                 />
                                 <span className="font-medium text-white">
-                                  {address.name}
+                                  {address?.Other}
                                 </span>
                                 <span className="text-sm text-gray-400 capitalize">
-                                  ({address.type})
+                                  ({address?.Type})
                                 </span>
                               </div>
                               <p className="text-gray-300 mb-1">
-                                {address.address}
+                                {address?.Address}
                               </p>
                               <p className="text-gray-400 text-sm">
-                                {address.district} {address.province}{" "}
-                                {address.postalCode}
+                                {address?.District} {address?.Province}
+                                {address?.PostalCode}
                               </p>
                               <p className="text-gray-400 text-sm">
-                                โทร: {address.phone}
+                                โทร: {address?.Phone}
                               </p>
                             </div>
                             <div className="flex space-x-2 ml-4">
@@ -690,6 +562,24 @@ const ProfilePage = () => {
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-300 mb-2">
+                      นามสกุลผู้รับ <span className="text-red-400">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={addressForm.lastName}
+                      onChange={(e) =>
+                        setAddressForm({
+                          ...addressForm,
+                          lastName: e.target.value,
+                        })
+                      }
+                      placeholder="กรอกนามสกุลผู้รับ"
+                      required
+                      className="w-full bg-gray-700 border border-gray-600 rounded-lg p-2 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
                       เบอร์โทรศัพท์ <span className="text-red-400">*</span>
                     </label>
                     <input
@@ -731,11 +621,11 @@ const ProfilePage = () => {
                       </label>
                       <input
                         type="text"
-                        value={addressForm.name || ""}
+                        value={addressForm.other || ""}
                         onChange={(e) =>
                           setAddressForm({
                             ...addressForm,
-                            name: e.target.value,
+                            other: e.target.value,
                           })
                         }
                         placeholder="เช่น บ้านแม่, ร้านค้า"
@@ -817,6 +707,45 @@ const ProfilePage = () => {
                       placeholder="จะแสดงอัตโนมัติเมื่อเลือกตำบล"
                       className="w-full bg-gray-600 border border-gray-600 rounded-lg p-2 text-white placeholder-gray-400 cursor-not-allowed"
                     />
+                  </div>
+                  <div className="flex items-center">
+                    <input
+                      type="checkbox"
+                      id="isDefault"
+                      checked={addressForm.isDefault}
+                      onChange={(e) =>
+                        setAddressForm({
+                          ...addressForm,
+                          isDefault: e.target.checked,
+                        })
+                      }
+                      className="w-4 h-4 text-blue-600 bg-gray-700 border-gray-600 rounded focus:ring-blue-500 focus:ring-2"
+                    />
+                    <label
+                      htmlFor="isDefault"
+                      className="ml-2 text-sm text-gray-300"
+                    >
+                      ตั้งเป็นที่อยู่หลัก
+                    </label>
+                  </div>
+                  <div className="flex gap-3 pt-4">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowAddressModal(false);
+                        setEditingAddress(null);
+                      }}
+                      className="flex-1 bg-gray-600 hover:bg-gray-500 text-white py-2 px-4 rounded-lg transition-colors"
+                    >
+                      ยกเลิก
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleAddressSubmit}
+                      className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg transition-colors"
+                    >
+                      {editingAddress ? "แก้ไข" : "บันทึก"}
+                    </button>
                   </div>
                 </form>
               </motion.div>
