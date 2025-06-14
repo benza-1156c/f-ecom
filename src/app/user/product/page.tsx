@@ -404,7 +404,7 @@ const ProductPage = () => {
                             <img
                               src={product?.Images[0]?.Url}
                               alt={product.Name}
-                              className="w-full h-48 object-cover"
+                              className="w-full h-full object-cover"
                               loading="lazy"
                             />
                             {product.OriginalPrice > product.Price && (

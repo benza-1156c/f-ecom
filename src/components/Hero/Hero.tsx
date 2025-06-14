@@ -1,6 +1,15 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronLeft, ChevronRight, ShoppingBag, Star, Zap, Shield, Truck } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  ShoppingBag,
+  Star,
+  Zap,
+  Shield,
+  Truck,
+} from "lucide-react";
+import RecommendedProducts from "./RecommendedProducts";
 
 const HeroSection = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -11,49 +20,52 @@ const HeroSection = () => {
       title: "คอลเลกชันใหม่ 2025",
       subtitle: "แฟชั่นล้ำสมัย",
       description: "ค้นพบสินค้าแฟชั่นล่าสุดที่จะทำให้คุณโดดเด่น",
-      image: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80",
+      image:
+        "https://images.unsplash.com/photo-1441986300917-64674bd600d8?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80",
       buttonText: "ช้อปเลย",
       discount: "ลด 50%",
-      bgGradient: "from-purple-900 via-blue-900 to-indigo-900"
+      bgGradient: "from-purple-900 via-blue-900 to-indigo-900",
     },
     {
       id: 2,
       title: "เทคโนโลยีล่าสุด",
       subtitle: "อุปกรณ์อิเล็กทรอนิกส์",
       description: "พบกับแกดเจ็ตและเทคโนโลยีใหม่ล่าสุด",
-      image: "https://images.unsplash.com/photo-1468495244123-6c6c332eeece?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80",
+      image:
+        "https://images.unsplash.com/photo-1468495244123-6c6c332eeece?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80",
       buttonText: "ดูสินค้า",
       discount: "ลด 30%",
-      bgGradient: "from-gray-900 via-purple-900 to-violet-900"
+      bgGradient: "from-gray-900 via-purple-900 to-violet-900",
     },
     {
       id: 3,
       title: "ของใช้ในบ้าน",
       subtitle: "ตกแต่งบ้านสวย",
       description: "เฟอร์นิเจอร์และของตกแต่งที่จะทำให้บ้านคุณสวยขึ้น",
-      image: "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80",
+      image:
+        "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80",
       buttonText: "เลือกซื้อ",
       discount: "ลด 40%",
-      bgGradient: "from-emerald-900 via-teal-900 to-cyan-900"
-    }
+      bgGradient: "from-emerald-900 via-teal-900 to-cyan-900",
+    },
   ];
 
   const features = [
     {
       icon: Truck,
       title: "จัดส่งฟรี",
-      description: "สั่งซื้อขั้นต่ำ 500 บาท"
+      description: "สั่งซื้อขั้นต่ำ 500 บาท",
     },
     {
       icon: Shield,
       title: "รับประกันคุณภาพ",
-      description: "สินค้าของแท้ 100%"
+      description: "สินค้าของแท้ 100%",
     },
     {
       icon: Zap,
       title: "จัดส่งเร็ว",
-      description: "ได้รับภายใน 24 ชั่วโมง"
-    }
+      description: "ได้รับภายใน 24 ชั่วโมง",
+    },
   ];
 
   // Auto-slide functionality
@@ -69,7 +81,9 @@ const HeroSection = () => {
   };
 
   const prevSlide = () => {
-    setCurrentSlide((prev) => (prev - 1 + heroSlides.length) % heroSlides.length);
+    setCurrentSlide(
+      (prev) => (prev - 1 + heroSlides.length) % heroSlides.length
+    );
   };
 
   return (
@@ -173,7 +187,6 @@ const HeroSection = () => {
                     </motion.div>
                   </motion.div>
 
-                  {/* Product Showcase */}
                   <motion.div
                     className="relative hidden lg:block"
                     initial={{ opacity: 0, x: 50 }}
@@ -194,15 +207,27 @@ const HeroSection = () => {
                         <div className="mt-6">
                           <div className="flex items-center gap-2 mb-2">
                             {[...Array(5)].map((_, i) => (
-                              <Star key={i} size={16} className="fill-yellow-400 text-yellow-400" />
+                              <Star
+                                key={i}
+                                size={16}
+                                className="fill-yellow-400 text-yellow-400"
+                              />
                             ))}
                             <span className="text-sm text-gray-300">(4.8)</span>
                           </div>
-                          <h3 className="text-xl font-bold mb-2">สินค้าแนะนำ</h3>
-                          <p className="text-gray-300 text-sm mb-4">คุณภาพพรีเมียม ราคาดีที่สุด</p>
+                          <h3 className="text-xl font-bold mb-2">
+                            สินค้าแนะนำ
+                          </h3>
+                          <p className="text-gray-300 text-sm mb-4">
+                            คุณภาพพรีเมียม ราคาดีที่สุด
+                          </p>
                           <div className="flex items-center justify-between">
-                            <span className="text-2xl font-bold text-purple-300">฿1,999</span>
-                            <span className="text-sm text-gray-400 line-through">฿3,999</span>
+                            <span className="text-2xl font-bold text-purple-300">
+                              ฿1,999
+                            </span>
+                            <span className="text-sm text-gray-400 line-through">
+                              ฿3,999
+                            </span>
                           </div>
                         </div>
                       </motion.div>
@@ -214,7 +239,6 @@ const HeroSection = () => {
           </motion.div>
         </AnimatePresence>
 
-        {/* Navigation Arrows */}
         <button
           onClick={prevSlide}
           className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 hover:bg-opacity-70 text-white p-3 rounded-full transition-all duration-300 z-20"
@@ -228,21 +252,23 @@ const HeroSection = () => {
           <ChevronRight size={24} />
         </button>
 
-        {/* Slide Indicators */}
         <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex space-x-3 z-20">
           {heroSlides.map((_, index) => (
             <button
               key={index}
               onClick={() => setCurrentSlide(index)}
               className={`w-3 h-3 rounded-full transition-all duration-300 ${
-                index === currentSlide ? 'bg-purple-500 w-8' : 'bg-white bg-opacity-50 hover:bg-opacity-70'
+                index === currentSlide
+                  ? "bg-purple-500 w-8"
+                  : "bg-white bg-opacity-50 hover:bg-opacity-70"
               }`}
             />
           ))}
         </div>
       </div>
+      
+      <RecommendedProducts />
 
-      {/* Features Section */}
       <div className="bg-gray-900 py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -261,7 +287,9 @@ const HeroSection = () => {
                 >
                   <feature.icon size={32} className="text-white" />
                 </motion.div>
-                <h3 className="text-xl font-bold text-white mb-2">{feature.title}</h3>
+                <h3 className="text-xl font-bold text-white mb-2">
+                  {feature.title}
+                </h3>
                 <p className="text-gray-400">{feature.description}</p>
               </motion.div>
             ))}
@@ -269,7 +297,6 @@ const HeroSection = () => {
         </div>
       </div>
 
-      {/* Stats Section */}
       <div className="bg-gradient-to-r from-purple-900 to-indigo-900 py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
@@ -277,7 +304,7 @@ const HeroSection = () => {
               { number: "50K+", label: "ลูกค้าที่พึงพอใจ" },
               { number: "10K+", label: "สินค้าคุณภาพ" },
               { number: "24/7", label: "บริการลูกค้า" },
-              { number: "99%", label: "ความพึงพอใจ" }
+              { number: "99%", label: "ความพึงพอใจ" },
             ].map((stat, index) => (
               <motion.div
                 key={index}
@@ -286,7 +313,9 @@ const HeroSection = () => {
                 transition={{ duration: 0.6, delay: index * 0.1 }}
                 viewport={{ once: true }}
               >
-                <div className="text-4xl lg:text-5xl font-bold text-white mb-2">{stat.number}</div>
+                <div className="text-4xl lg:text-5xl font-bold text-white mb-2">
+                  {stat.number}
+                </div>
                 <div className="text-purple-200">{stat.label}</div>
               </motion.div>
             ))}

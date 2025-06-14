@@ -1,49 +1,38 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Icon } from "@iconify/react/dist/iconify.js";
+import { useAuth } from "@/app/AuthProvider";
 
 const CartModal = ({ isCartOpen, setIsCartOpen }: any) => {
   const toggleCart = () => setIsCartOpen(!isCartOpen);
-  const [cartCount] = useState(3);
+  const { user } = useAuth();
 
-  const [cartItems] = useState([
-    {
-      id: 1,
-      name: "iPhone 15 Pro",
-      price: 45000,
-      quantity: 1,
-      image:
-        "https://images.unsplash.com/photo-1592750475338-74b7b21085ab?w=100&h=100&fit=crop",
-    },
-    {
-      id: 2,
-      name: "MacBook Air M2",
-      price: 42000,
-      quantity: 1,
-      image:
-        "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=100&h=100&fit=crop",
-    },
-    {
-      id: 3,
-      name: "AirPods Pro",
-      price: 8900,
-      quantity: 2,
-      image:
-        "https://images.unsplash.com/photo-1572569511254-d8f925fe2cbb?w=100&h=100&fit=crop",
-    },
-  ]);
+  const cartItems = user?.Cart?.CartItems || [];
+  const cartCount = cartItems.length;
+
+  const formatPrice = (price: number) => {
+    return new Intl.NumberFormat("th-TH").format(price);
+  };
 
   const totalPrice = cartItems.reduce(
-    (sum, item) => sum + item.price * item.quantity,
+    (sum: number, item: any) => sum + item.Product.Price * item.Quantity,
     0
   );
+
+  const updateQuantity = (cartItemId: number, newQuantity: number) => {
+    console.log(`Update item ${cartItemId} to quantity ${newQuantity}`);
+  };
+
+  const removeFromCart = (cartItemId: number) => {
+    console.log(`Remove item ${cartItemId} from cart`);
+  };
 
   return (
     <AnimatePresence>
       {isCartOpen && (
         <>
           <motion.div
-            className="fixed inset-0 backdrop-blur-sm bg-opacity-50 z-50"
+            className="fixed inset-0 backdrop-blur-sm  bg-opacity-50 z-50"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -75,82 +64,136 @@ const CartModal = ({ isCartOpen, setIsCartOpen }: any) => {
               className="flex-1 overflow-y-auto p-4 space-y-4"
               style={{ maxHeight: "calc(100vh - 200px)" }}
             >
-              {cartItems.map((item, index) => (
-                <motion.div
-                  key={item.id}
-                  className="flex items-center space-x-4 bg-gray-800 rounded-lg p-3"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.1 }}
-                >
-                  <img
-                    src={item.image}
-                    alt={item.name}
-                    className="w-16 h-16 object-cover rounded-md"
+              {cartItems.length === 0 ? (
+                <div className="flex flex-col items-center justify-center h-64 text-gray-400">
+                  <Icon
+                    icon="mdi:cart-outline"
+                    width="64"
+                    height="64"
+                    className="mb-4"
                   />
-                  <div className="flex-1">
-                    <h3 className="text-white font-medium text-sm">
-                      {item.name}
-                    </h3>
-                    <p className="text-gray-400 text-sm">
-                      ฿{item.price.toLocaleString()}
-                    </p>
-                    <div className="flex items-center space-x-2 mt-2">
-                      <motion.button
-                        className="w-6 h-6 bg-gray-700 text-white rounded-full flex items-center justify-center text-sm"
-                        whileHover={{ scale: 1.1 }}
-                        whileTap={{ scale: 0.9 }}
-                      >
-                        -
-                      </motion.button>
-                      <span className="text-white text-sm w-8 text-center">
-                        {item.quantity}
-                      </span>
-                      <motion.button
-                        className="w-6 h-6 bg-purple-500 text-white rounded-full flex items-center justify-center text-sm"
-                        whileHover={{ scale: 1.1 }}
-                        whileTap={{ scale: 0.9 }}
-                      >
-                        +
-                      </motion.button>
-                    </div>
-                  </div>
-                  <motion.button
-                    className="text-gray-400 hover:text-red-400 p-1"
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.9 }}
+                  <p className="text-lg">ตะกร้าสินค้าว่างเปล่า</p>
+                  <p className="text-sm">
+                    เพิ่มสินค้าลงในตะกร้าเพื่อเริ่มช้อปปิ้ง
+                  </p>
+                </div>
+              ) : (
+                cartItems.map((item: any, index: number) => (
+                  <motion.div
+                    key={item.ID}
+                    className="flex items-center space-x-4 bg-gray-800 rounded-lg p-3"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.1 }}
                   >
-                    <Icon icon="mdi:delete" width="24" height="24" />
+                    <img
+                      src={
+                        item.Product.Images[0]?.Url || "/placeholder-image.jpg"
+                      }
+                      alt={item.Product.Name}
+                      className="w-16 h-16 object-cover rounded-md"
+                    />
+                    <div className="flex-1">
+                      <h3 className="text-white font-medium text-sm line-clamp-2">
+                        {item.Product.Name}
+                      </h3>
+                      <p className="text-gray-400 text-sm">
+                        ฿{formatPrice(item.Product.Price)}
+                      </p>
+                      <div className="flex items-center space-x-2 mt-2">
+                        <motion.button
+                          className="w-6 h-6 bg-gray-700 hover:bg-gray-600 text-white rounded-full flex items-center justify-center text-sm transition-colors"
+                          whileHover={{ scale: 1.1 }}
+                          whileTap={{ scale: 0.9 }}
+                          onClick={() =>
+                            updateQuantity(
+                              item.ID,
+                              Math.max(1, item.Quantity - 1)
+                            )
+                          }
+                          disabled={item.Quantity <= 1}
+                        >
+                          -
+                        </motion.button>
+                        <span className="text-white text-sm w-8 text-center">
+                          {item.Quantity}
+                        </span>
+                        <motion.button
+                          className="w-6 h-6 bg-purple-500 hover:bg-purple-600 text-white rounded-full flex items-center justify-center text-sm transition-colors"
+                          whileHover={{ scale: 1.1 }}
+                          whileTap={{ scale: 0.9 }}
+                          onClick={() =>
+                            updateQuantity(item.ID, item.Quantity + 1)
+                          }
+                        >
+                          +
+                        </motion.button>
+                      </div>
+                      <div className="text-xs text-gray-500 mt-1">
+                        รวม: ฿{formatPrice(item.Product.Price * item.Quantity)}
+                      </div>
+                    </div>
+                    <motion.button
+                      className="text-gray-400 hover:text-red-400 p-1 transition-colors"
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.9 }}
+                      onClick={() => removeFromCart(item.ID)}
+                    >
+                      <Icon icon="mdi:delete" width="20" height="20" />
+                    </motion.button>
+                  </motion.div>
+                ))
+              )}
+            </div>
+
+            {cartItems.length > 0 && (
+              <div className="border-t border-gray-800 p-4">
+                <div className="flex justify-between items-center mb-4">
+                  <span className="text-gray-300">รวมทั้งหมด:</span>
+                  <span className="text-2xl font-bold text-white">
+                    ฿{formatPrice(totalPrice)}
+                  </span>
+                </div>
+
+                <div className="space-y-2">
+                  <motion.button
+                    className="w-full bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white py-3 rounded-lg font-medium transition-all duration-200 shadow-lg"
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    ดำเนินการชำระเงิน
                   </motion.button>
-                </motion.div>
-              ))}
-            </div>
-
-            <div className="border-t border-gray-800 p-4">
-              <div className="flex justify-between items-center mb-4">
-                <span className="text-gray-300">รวมทั้งหมด:</span>
-                <span className="text-2xl font-bold text-white">
-                  ฿{totalPrice.toLocaleString()}
-                </span>
+                  <motion.button
+                    className="w-full bg-gray-700 hover:bg-gray-600 text-white py-2 rounded-lg font-medium transition-colors"
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={toggleCart}
+                  >
+                    ดูตะกร้าสินค้า
+                  </motion.button>
+                </div>
               </div>
+            )}
 
-              <div className="space-y-2">
-                <motion.button
-                  className="w-full bg-purple-600 hover:bg-purple-700 text-white py-3 rounded-lg font-medium transition-colors"
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                >
-                  ชำระเงิน
-                </motion.button>
-                <motion.button
-                  className="w-full bg-gray-700 hover:bg-gray-600 text-white py-2 rounded-lg font-medium transition-colors"
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                >
-                  ดูตะกร้าสินค้า
-                </motion.button>
+            {user && (
+              <div className="absolute bottom-4 left-4 right-4">
+                <div className="bg-gray-800/50 rounded-lg p-2 flex items-center space-x-2">
+                  <img
+                    src={user.Avatar}
+                    alt={user.UserName}
+                    className="w-8 h-8 rounded-full"
+                  />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-white text-sm font-medium truncate">
+                      {user.UserName}
+                    </p>
+                    <p className="text-gray-400 text-xs truncate">
+                      {user.Email}
+                    </p>
+                  </div>
+                </div>
               </div>
-            </div>
+            )}
           </motion.div>
         </>
       )}

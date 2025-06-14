@@ -1,5 +1,5 @@
 export const menuItems = [
-  { name: "หน้าแรก", href: "#" },
+  { name: "หน้าแรก", href: "/" },
   { name: "สินค้า", href: "/user/product" },
   { name: "หมวดหมู่", href: "#" },
   { name: "โปรโมชั่น", href: "#" },

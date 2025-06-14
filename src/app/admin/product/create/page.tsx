@@ -376,7 +376,7 @@ const AddProductPage = () => {
                         <img
                           src={image}
                           alt={`Preview ${index + 1}`}
-                          className="w-full h-24 object-cover rounded-lg border border-gray-600"
+                          className="w-full h-full object-cover rounded-lg border border-gray-600"
                         />
                         <button
                           type="button"

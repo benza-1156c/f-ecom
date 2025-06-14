@@ -7,13 +7,15 @@ import Link from "next/link";
 import CartModal from "./CartModal";
 import UserModal from "./UserModal";
 import { menuItems } from "@/lib/item";
+import { useAuth } from "@/app/AuthProvider";
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isUserOpen, setIsUserOpen] = useState(false);
-  const [cartCount] = useState(3);
+  const { user } = useAuth();
+  const cartCount = user?.Cart?.CartItems?.length || 0;
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
   const toggleSearch = () => setIsSearchOpen(!isSearchOpen);

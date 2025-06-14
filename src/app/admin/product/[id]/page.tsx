@@ -194,7 +194,7 @@ const EditProductPage = () => {
 
   const GetCategories = async () => {
     try {
-      const res = await fetch(`${api}/admin/category`, {
+      const res = await fetch(`${api}/category`, {
         method: "GET",
         credentials: "include",
       });
@@ -209,7 +209,7 @@ const EditProductPage = () => {
 
   const GetBrands = async () => {
     try {
-      const res = await fetch(`${api}/admin/brand`, {
+      const res = await fetch(`${api}/brand`, {
         method: "GET",
         credentials: "include",
       });
@@ -599,7 +599,7 @@ const EditProductPage = () => {
                 className="px-6 py-3 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors"
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                onClick={() => router.push("/admin/products")}
+                onClick={() => router.push("/admin/product")}
               >
                 ยกเลิก
               </motion.button>
