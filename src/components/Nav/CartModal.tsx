@@ -1,11 +1,12 @@
-import React, { useState } from "react";
+import React, { useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Icon } from "@iconify/react/dist/iconify.js";
 import { useAuth } from "@/app/AuthProvider";
+import { api } from "@/lib/api";
 
 const CartModal = ({ isCartOpen, setIsCartOpen }: any) => {
   const toggleCart = () => setIsCartOpen(!isCartOpen);
-  const { user } = useAuth();
+  const { user, setUser } = useAuth();
 
   const cartItems = user?.Cart?.CartItems || [];
   const cartCount = cartItems.length;
@@ -27,6 +28,32 @@ const CartModal = ({ isCartOpen, setIsCartOpen }: any) => {
     console.log(`Remove item ${cartItemId} from cart`);
   };
 
+  const GetCart = async () => {
+    try {
+      const response = await fetch(`${api}/cart/${user?.Cart?.ID}`, {
+        credentials: "include",
+      });
+      const data = await response.json();
+      if (data.success) {
+        setUser((prev: any) => ({
+          ...prev,
+          Cart: {
+            ...(prev.Cart || {}),
+            CartItems: data.data,
+          },
+        }));
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  useEffect(() => {
+    if (isCartOpen) {
+      GetCart();
+    }
+  }, [isCartOpen]);
+
   return (
     <AnimatePresence>
       {isCartOpen && (
@@ -40,13 +67,13 @@ const CartModal = ({ isCartOpen, setIsCartOpen }: any) => {
           />
 
           <motion.div
-            className="fixed right-0 top-0 h-full w-full max-w-md bg-gray-900 shadow-xl z-50 border-l border-gray-800"
+            className="fixed right-0 top-0 h-full w-full max-w-md bg-gray-900 shadow-xl z-50 border-l border-gray-800 flex flex-col"
             initial={{ x: "100%" }}
             animate={{ x: 0 }}
             exit={{ x: "100%" }}
             transition={{ type: "spring", damping: 30, stiffness: 300 }}
           >
-            <div className="flex items-center justify-between p-4 border-b border-gray-800">
+            <div className="flex items-center justify-between p-4 border-b border-gray-800 flex-shrink-0">
               <h2 className="text-xl font-semibold text-white">
                 ตะกร้าสินค้า ({cartCount})
               </h2>
@@ -60,10 +87,7 @@ const CartModal = ({ isCartOpen, setIsCartOpen }: any) => {
               </motion.button>
             </div>
 
-            <div
-              className="flex-1 overflow-y-auto p-4 space-y-4"
-              style={{ maxHeight: "calc(100vh - 200px)" }}
-            >
+            <div className="flex-1 overflow-y-auto p-4 space-y-4 min-h-0">
               {cartItems.length === 0 ? (
                 <div className="flex flex-col items-center justify-center h-64 text-gray-400">
                   <Icon
@@ -146,8 +170,28 @@ const CartModal = ({ isCartOpen, setIsCartOpen }: any) => {
               )}
             </div>
 
+            {user && (
+              <div className="border-t border-gray-800 p-4 flex-shrink-0">
+                <div className="bg-gray-800/50 rounded-lg p-3 flex items-center space-x-3">
+                  <img
+                    src={user.Avatar}
+                    alt={user.UserName}
+                    className="w-10 h-10 rounded-full"
+                  />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-white text-sm font-medium truncate">
+                      {user.UserName}
+                    </p>
+                    <p className="text-gray-400 text-xs truncate">
+                      {user.Email}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {cartItems.length > 0 && (
-              <div className="border-t border-gray-800 p-4">
+              <div className="border-t border-gray-800 p-4 flex-shrink-0">
                 <div className="flex justify-between items-center mb-4">
                   <span className="text-gray-300">รวมทั้งหมด:</span>
                   <span className="text-2xl font-bold text-white">
@@ -171,26 +215,6 @@ const CartModal = ({ isCartOpen, setIsCartOpen }: any) => {
                   >
                     ดูตะกร้าสินค้า
                   </motion.button>
-                </div>
-              </div>
-            )}
-
-            {user && (
-              <div className="absolute bottom-4 left-4 right-4">
-                <div className="bg-gray-800/50 rounded-lg p-2 flex items-center space-x-2">
-                  <img
-                    src={user.Avatar}
-                    alt={user.UserName}
-                    className="w-8 h-8 rounded-full"
-                  />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-white text-sm font-medium truncate">
-                      {user.UserName}
-                    </p>
-                    <p className="text-gray-400 text-xs truncate">
-                      {user.Email}
-                    </p>
-                  </div>
                 </div>
               </div>
             )}

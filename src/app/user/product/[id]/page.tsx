@@ -7,11 +7,13 @@ import { useParams, useRouter } from "next/navigation";
 import Navbar from "@/components/Nav/Navbar";
 import { api } from "@/lib/api";
 import toast from "react-hot-toast";
+import { useAuth } from "@/app/AuthProvider";
 
 const ProductDetailPage = () => {
   const params = useParams();
   const router = useRouter();
   const productId = params?.id;
+  const { user, setUser } = useAuth();
 
   const [product, setProduct] = useState<any | null>(null);
   const [categories, setCategories] = useState<any[]>([]);
@@ -38,7 +40,6 @@ const ProductDetailPage = () => {
     try {
       setLoading(true);
       setError(null);
-
       const response = await fetch(`${api}/product/${productId}`);
       if (!response.ok) {
         if (response.status === 404) {
@@ -53,8 +54,6 @@ const ProductDetailPage = () => {
       if (data.data?.CategoriesID) {
         fetchRelatedProducts(data.data.CategoriesID, data.data.ID);
       }
-
-      fetchReviews();
     } catch (error: any) {
       console.error(error);
       setError(error.message);
@@ -103,17 +102,6 @@ const ProductDetailPage = () => {
     }
   };
 
-  const fetchReviews = async () => {
-    try {
-      const response = await fetch(`${api}/products/${productId}/reviews`);
-      if (!response.ok) return;
-      const data = await response.json();
-      setReviews(data.data || []);
-    } catch (error) {
-      console.error(error);
-    }
-  };
-
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat("th-TH").format(price);
   };
@@ -151,6 +139,11 @@ const ProductDetailPage = () => {
   };
 
   const handleBuyNow = () => {
+    if (!user?.ID) {
+      toast.error("กรุณาเข้าสู่ระบบก่อน");
+      router.push("/login");
+      return;
+    }
     console.log(`Buying ${quantity} of product ${product?.ID}`);
   };
 
@@ -404,15 +397,26 @@ const ProductDetailPage = () => {
                 >
                   ซื้อเลย
                 </motion.button>
-                <motion.button
-                  onClick={handleAddToCart}
-                  className="w-full bg-gray-700 hover:bg-gray-600 text-white py-3 rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
-                  disabled={product.Count === 0}
-                  whileTap={{ scale: 0.98 }}
-                >
-                  <Icon icon="ic:round-shopping-cart" className="w-5 h-5" />
-                  <span>เพิ่มลงตะกร้า</span>
-                </motion.button>
+                {user?.ID ? (
+                  <motion.button
+                    onClick={handleAddToCart}
+                    className="w-full bg-gray-700 hover:bg-gray-600 text-white py-3 rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
+                    disabled={product.Count === 0}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    <Icon icon="ic:round-shopping-cart" className="w-5 h-5" />
+                    <span>เพิ่มลงตะกร้า</span>
+                  </motion.button>
+                ) : (
+                  <motion.button
+                    onClick={() => router.push("/login")}
+                    className="w-full bg-gray-700 hover:bg-gray-600 text-white py-3 rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    <Icon icon="ic:round-login" className="w-5 h-5" />
+                    <span>เข้าสู่ระบบเพื่อเพิ่มลงตะกร้า</span>
+                  </motion.button>
+                )}
               </div>
             </div>
           </div>

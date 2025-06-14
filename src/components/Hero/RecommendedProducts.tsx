@@ -142,19 +142,9 @@ const RecommendedProducts = () => {
                         alt={product.Name}
                         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                       />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-
-                      <div className="absolute bottom-4 right-4 flex space-x-2 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-4 group-hover:translate-y-0">
-                        <Link
-                          href={`/user/product/${product.ID}`}
-                          className="bg-white/90 hover:bg-white text-gray-800 p-2 rounded-full shadow-lg hover:scale-110 transition-all duration-200"
-                        >
-                          <Eye size={16} />
-                        </Link>
-                        <button className="bg-red-500/90 hover:bg-red-500 text-white p-2 rounded-full shadow-lg hover:scale-110 transition-all duration-200">
-                          <Heart size={16} />
-                        </button>
-                      </div>
+                      <Link
+                      href={`/user/product/${product.ID}`}
+                      className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                     </div>
 
                     <div className="p-6 space-y-4 flex-1 flex flex-col">
@@ -201,11 +191,6 @@ const RecommendedProducts = () => {
                           </div>
                         </div>
                       </div>
-
-                      <button className="w-full bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white py-3 rounded-xl font-semibold transition-all duration-200 hover:shadow-lg hover:shadow-purple-500/25 transform hover:scale-105 flex items-center justify-center space-x-2 mt-auto">
-                        <ShoppingCart size={18} />
-                        <span>เพิ่มไปยังตะกร้า</span>
-                      </button>
                     </div>
                   </div>
                 </SwiperSlide>
