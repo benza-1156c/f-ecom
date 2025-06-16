@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Icon } from "@iconify/react/dist/iconify.js";
 import { useAuth } from "@/app/AuthProvider";
 import { api } from "@/lib/api";
+import Link from "next/link";
 
 const CartModal = ({ isCartOpen, setIsCartOpen }: any) => {
   const toggleCart = () => setIsCartOpen(!isCartOpen);
@@ -205,7 +206,9 @@ const CartModal = ({ isCartOpen, setIsCartOpen }: any) => {
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                   >
-                    ดำเนินการชำระเงิน
+                    <Link href="/user/checkout">
+                      ดำเนินการชำระเงิน
+                    </Link>
                   </motion.button>
                   <motion.button
                     className="w-full bg-gray-700 hover:bg-gray-600 text-white py-2 rounded-lg font-medium transition-colors"
