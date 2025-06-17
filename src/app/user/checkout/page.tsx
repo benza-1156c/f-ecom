@@ -11,19 +11,23 @@ import {
   ArrowLeft,
   Plus,
   Minus,
+  Trash,
 } from "lucide-react";
 import { useAuth } from "@/app/AuthProvider";
 import Navbar from "@/components/Nav/Navbar";
 import toast from "react-hot-toast";
 import { QRCodeSVG } from "qrcode.react";
 import { api } from "@/lib/api";
+import { useRouter } from "next/navigation";
 
 const CheckoutPage = () => {
-  const { user } = useAuth();
+  const { user, setUser } = useAuth();
   const [currentStep, setCurrentStep] = useState(1);
   const [paymentMethod, setPaymentMethod] = useState("credit");
   const [shippingMethod, setShippingMethod] = useState("standard");
   const [qrCode, setQrCode] = useState("");
+
+  const router = useRouter();
 
   const cartItems = user?.Cart?.CartItems || [];
   const userAddresses = user?.Address || [];
@@ -90,8 +94,71 @@ const CheckoutPage = () => {
     }
   };
 
-  const updateQuantity = (id: any, newQuantity: any) => {
-    console.log(`Update item ${id} to quantity ${newQuantity}`);
+  const updateQuantity = async (productId: any, newQuantity: any) => {
+    if (newQuantity < 1) {
+      toast.error("จำนวนสินค้าต้องมากกว่า 1");
+      return;
+    }
+    try {
+      const res = await fetch(`${api}/cart/update`, {
+        method: "PUT",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          cartId: user?.Cart?.ID,
+          quantity: newQuantity,
+          productId: productId,
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setUser((prev: any) => ({
+          ...prev,
+          Cart: {
+            ...(prev.Cart || {}),
+            CartItems: prev.Cart.CartItems.map((item: any) => {
+              if (item.Product.ID === productId) {
+                return {
+                  ...item,
+                  Quantity: newQuantity,
+                };
+              }
+              return item;
+            }),
+          },
+        }));
+        toast.success("อัปเดตจำนวนสินค้าสำเร็จ");
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const removeFromCart = async (cartItemId: any) => {
+    console.log(cartItemId);
+    try {
+      const res = await fetch(`${api}/cart/remove/${cartItemId}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+      const data = await res.json();
+      if (data.success) {
+        setUser((prev: any) => ({
+          ...prev,
+          Cart: {
+            ...(prev.Cart || {}),
+            CartItems: prev.Cart.CartItems.filter(
+              (item: any) => item.ID !== cartItemId
+            ),
+          },
+        }));
+        toast.success("ลบสินค้าออกจากตะกร้าสำเร็จ");
+      }
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   return (
@@ -530,7 +597,7 @@ const CheckoutPage = () => {
                 <motion.button
                   onClick={
                     currentStep === 3
-                      ? () => alert("สั่งซื้อเรียบร้อย!")
+                      ? () => router.push("/user/profile")
                       : handleNext
                   }
                   className="bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white px-8 py-3 rounded-lg font-medium transition-all shadow-lg"
@@ -572,28 +639,45 @@ const CheckoutPage = () => {
                         <p className="text-gray-400 text-sm">
                           ฿{formatPrice(item.Product?.Price || 0)}
                         </p>
-                        <div className="flex items-center space-x-2 mt-1">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center space-x-2 mt-1">
+                            <button
+                              onClick={() =>
+                                updateQuantity(
+                                  item.Product?.ID,
+                                  Math.max(1, item.Quantity - 1)
+                                )
+                              }
+                              disabled={item.Quantity === 1}
+                              className={`w-6 h-6 bg-gray-700 hover:bg-gray-600 text-white rounded-full flex items-center justify-center text-xs 
+                              ${
+                                item.Quantity === 1
+                                  ? "opacity-50 cursor-not-allowed"
+                                  : ""
+                              }`}
+                            >
+                              <Minus size={12} />
+                            </button>
+                            <span className="text-white text-sm w-8 text-center">
+                              {item.Quantity}
+                            </span>
+                            <button
+                              onClick={() =>
+                                updateQuantity(
+                                  item.Product?.ID,
+                                  item.Quantity + 1
+                                )
+                              }
+                              className="w-6 h-6 bg-purple-600 hover:bg-purple-700 text-white rounded-full flex items-center justify-center text-xs"
+                            >
+                              <Plus size={12} />
+                            </button>
+                          </div>
                           <button
-                            onClick={() =>
-                              updateQuantity(
-                                item.ID,
-                                Math.max(1, item.Quantity - 1)
-                              )
-                            }
-                            className="w-6 h-6 bg-gray-700 hover:bg-gray-600 text-white rounded-full flex items-center justify-center text-xs"
+                            onClick={() => removeFromCart(item.ID)}
+                            className="text-gray-400 hover:text-red-500"
                           >
-                            <Minus size={12} />
-                          </button>
-                          <span className="text-white text-sm w-8 text-center">
-                            {item.Quantity}
-                          </span>
-                          <button
-                            onClick={() =>
-                              updateQuantity(item.ID, item.Quantity + 1)
-                            }
-                            className="w-6 h-6 bg-purple-600 hover:bg-purple-700 text-white rounded-full flex items-center justify-center text-xs"
-                          >
-                            <Plus size={12} />
+                            <Trash size={20} />
                           </button>
                         </div>
                       </div>

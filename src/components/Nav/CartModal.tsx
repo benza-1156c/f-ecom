@@ -206,9 +206,7 @@ const CartModal = ({ isCartOpen, setIsCartOpen }: any) => {
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                   >
-                    <Link href="/user/checkout">
-                      ดำเนินการชำระเงิน
-                    </Link>
+                    <Link href="/user/checkout">ดำเนินการชำระเงิน</Link>
                   </motion.button>
                   <motion.button
                     className="w-full bg-gray-700 hover:bg-gray-600 text-white py-2 rounded-lg font-medium transition-colors"
